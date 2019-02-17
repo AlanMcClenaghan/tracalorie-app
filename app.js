@@ -2,9 +2,9 @@
 
 
 // Item Controller
-const ItemCtrl = (() => {
+const ItemCtrl = (function () {
   // Item Constructor
-  const Item = (id, name, calories) => {
+  const Item = function (id, name, calories) {
     this.id = id;
     this.name = name;
     this.calories = calories;
@@ -13,9 +13,9 @@ const ItemCtrl = (() => {
   // Data Structure / State
   const data = {
     items: [
-      { id: 0, name: 'Steak Dinner', calories: 1200 },
-      { id: 1, name: 'Cookie', calories: 400 },
-      { id: 2, name: 'Eggs', calories: 300 },
+      // { id: 0, name: 'Steak Dinner', calories: 1200 },
+      // { id: 1, name: 'Cookie', calories: 400 },
+      // { id: 2, name: 'Eggs', calories: 300 },
     ],
     currentItem: null,
     totalCalories: 0
@@ -30,7 +30,7 @@ const ItemCtrl = (() => {
       let ID;
       // Create ID
       if (data.items.length > 0) {
-        ID = data.items[data.items.length.length - 1].id + 1;
+        ID = data.items[data.items.length - 1].id + 1;
       } else {
         ID = 0
       }
@@ -69,11 +69,10 @@ const UICtrl = (() => {
       items.map((item) => {
         html += `
           <li class="collection-item" id="item-${item.id}">
-            <strong>${item.name}: <em>${item.calories} Calories</em>
-              <a href="#" class="secondary-content">
-                <i class="edit-item fa fa-pencil"></i>
-              </a>
-            </strong>
+            <strong>${item.name}: </strong><em>${item.calories} Calories</em>
+            <a href="#" class="secondary-content">
+              <i class="edit-item fa fa-pencil"></i>
+            </a>
           </li>
         `
       });
@@ -85,6 +84,33 @@ const UICtrl = (() => {
         name: document.querySelector(UISelectors.itemNameInput).value,
         calories: document.querySelector(UISelectors.itemCaloriesInput).value
       }
+    },
+    addListItem: item => {
+      // Show the list
+      document.querySelector(UISelectors.itemList).style.display = 'block';
+      // Create li element
+      const li = document.createElement('li');
+      // Add class
+      li.className = 'collection-item';
+      // Add ID
+      li.id = `item-${item.id}`;
+
+      // Add HTML
+      li.innerHTML = `
+        <strong>${item.name}: </strong><em>${item.calories} Calories</em>
+        <a href="#" class="secondary-content">
+          <i class="edit-item fa fa-pencil"></i>
+        </a>
+      `
+      // Insert item
+      document.querySelector(UISelectors.itemList).insertAdjacentElement('beforeend', li);
+    },
+    clearInput: () => {
+      document.querySelector(UISelectors.itemNameInput).value = '';
+      document.querySelector(UISelectors.itemCaloriesInput).value = '';
+    },
+    hideList: () => {
+      document.querySelector(UISelectors.itemList).style.display = 'none';
     },
     getSelectors: () => {
       return UISelectors;
@@ -117,24 +143,30 @@ const App = ((ItemCtrl, UICtrl) => {
       console.log(input.name, input.calories)
       // Add item
       const newItem = ItemCtrl.addItem(input.name, input.calories);
+      // Add item to UI list
+      UICtrl.addListItem(newItem);
     } else {
       console.log('Please complete both inputs')
     }
 
-
-
+    // Clear fields
+    UICtrl.clearInput();
   }
-
-
 
   // Public methods
   return {
     init: () => {
       // Fetch items from data structure
       const items = ItemCtrl.getItems()
-      console.log(items)
-      // Populate list with items
-      UICtrl.populatItemList(items);
+
+      // Check if any items
+      if (items.length === 0) {
+        UICtrl.hideList();
+      } else {
+        // Populate list with items
+        UICtrl.populatItemList(items);
+      }
+
       // Load event listeners
       loadEventListeners();
     }
