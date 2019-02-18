@@ -55,6 +55,21 @@ const ItemCtrl = (function () {
       });
       return found;
     },
+    updateItem: (name, calories) => {
+      // Calories to number
+      calories = parseInt(calories);
+
+      let found = null;
+
+      data.items.map((item) => {
+        if (item.id === data.currentItem.id) {
+          item.name = name;
+          item.calories = calories;
+          found = item;
+        }
+      });
+      return found;
+    },
     setCurrentItem: (item) => {
       data.currentItem = item;
     },
@@ -86,6 +101,7 @@ const ItemCtrl = (function () {
 const UICtrl = (() => {
   const UISelectors = {
     itemList: '#item-list',
+    listItems: '#item-list li',
     addbtn: '.add-btn',
     updatebtn: '.update-btn',
     deletebtn: '.delete-btn',
@@ -138,6 +154,25 @@ const UICtrl = (() => {
       // Insert item
       document.querySelector(UISelectors.itemList).insertAdjacentElement('beforeend', li);
     },
+    updateListItem: (item) => {
+      let listItems = document.querySelectorAll(UISelectors.listItems);
+
+      // Turn node list into array
+      listItems = Array.from(listItems);
+
+      listItems.map((listItem) => {
+        const itemID = listItem.getAttribute('id');
+
+        if (itemID === `item-${item.id}`) {
+          document.querySelector(`#${itemID}`).innerHTML = `
+            <strong>${item.name}: </strong><em>${item.calories} Calories</em>
+            <a href="#" class="secondary-content">
+              <i class="edit-item fa fa-pencil"></i>
+            </a>
+          `
+        }
+      });
+    },
     clearInput: () => {
       document.querySelector(UISelectors.itemNameInput).value = '';
       document.querySelector(UISelectors.itemCaloriesInput).value = '';
@@ -184,8 +219,19 @@ const App = ((ItemCtrl, UICtrl) => {
     // Add item event
     document.querySelector(UISelectors.addbtn).addEventListener('click', itemAddSubmit);
 
+    // Disable sumit on enter
+    document.addEventListener('keypress', (e) => {
+      if (e.keyCode === 13 || e.which === 13) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
     // Edit icon click event
     document.querySelector(UISelectors.itemList).addEventListener('click', itemEditClick);
+
+    // Update item event
+    document.querySelector(UISelectors.updatebtn).addEventListener('click', itemUpdateSubmit);
   }
 
 
@@ -235,6 +281,25 @@ const App = ((ItemCtrl, UICtrl) => {
       // Add item to form
       UICtrl.addItemToForm();
     }
+  }
+
+  // Update item submit
+  const itemUpdateSubmit = (e) => {
+    e.preventDefault();
+    // Get item input
+    const input = UICtrl.getItemInput();
+    // Update item
+    const updatedItem = ItemCtrl.updateItem(input.name, input.calories);
+    // Update UI
+    UICtrl.updateListItem(updatedItem);
+
+    // Get total calories
+    const totalCalories = ItemCtrl.getTotalCalories();
+
+    // Add total calories to the UI
+    UICtrl.showTotalCalories(totalCalories);
+
+    UICtrl.clearEditState();
   }
 
   // Public methods
