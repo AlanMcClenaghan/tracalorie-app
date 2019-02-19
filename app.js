@@ -30,6 +30,29 @@ const StorageCtrl = (() => {
         items = JSON.parse(localStorage.getItem('items'));
       }
       return items;
+    },
+    updateItemStorage: (updatedItem) => {
+      let items = JSON.parse(localStorage.getItem('items'));
+
+      items.map((item, index) => {
+        if (updatedItem.id === item.id) {
+          items.splice(index, 1, updatedItem);
+        }
+      });
+      localStorage.setItem('items', JSON.stringify(items));
+    },
+    deleteItemFromStorage: (id) => {
+      let items = JSON.parse(localStorage.getItem('items'));
+
+      items.map((item, index) => {
+        if (id === item.id) {
+          items.splice(index, 1);
+        }
+      });
+      localStorage.setItem('items', JSON.stringify(items));
+    },
+    clearItemsFromStorage: () => {
+      localStorage.removeItem('items');
     }
   }
 })();
@@ -380,6 +403,9 @@ const App = ((ItemCtrl, StorageCtrl, UICtrl) => {
     // Add total calories to the UI
     UICtrl.showTotalCalories(totalCalories);
 
+    // Update Local Storage
+    StorageCtrl.updateItemStorage(updatedItem);
+
     UICtrl.clearEditState();
   }
 
@@ -402,11 +428,15 @@ const App = ((ItemCtrl, StorageCtrl, UICtrl) => {
     // Add total calories to the UI
     UICtrl.showTotalCalories(totalCalories);
 
+    // Delete from Local Storage
+    StorageCtrl.deleteItemFromStorage(currentItem.id);
+
     UICtrl.clearEditState();
   }
 
   // Clear item event
   const clearAllItemsClick = () => {
+
     // Delete all items from the data structure
     ItemCtrl.clearAllItems();
 
@@ -418,6 +448,9 @@ const App = ((ItemCtrl, StorageCtrl, UICtrl) => {
 
     // Remove form UI
     UICtrl.removeItems();
+
+    // Clear all from local storage
+    StorageCtrl.clearItemsFromStorage();
 
     // Hide UL
     UICtrl.hideList();
